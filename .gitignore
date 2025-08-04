@@ -1,0 +1,46 @@
+## Ignore pastas de build e cache
+bin/
+obj/
+packages/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Ignore arquivos temporários do Visual Studio
+.vs/
+*.ncb
+*.sdf
+*.suo
+*.user
+*.cache
+*.dbmdl
+
+## Logs e temporários
+*.log
+*.tmp
+
+## Arquivos de backup do Windows
+*.bak
+*.swp
+*.~*
+
+## Configurações locais
+*.local.json
+
+## Ignore arquivos do sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Ignore arquivos de publish
+publish/
+*.publish.xml
+
+## Ignore arquivos do Rider
+.idea/
+
+## Ignore diretório do GitHub Codespaces (se usar)
+.devcontainer/
