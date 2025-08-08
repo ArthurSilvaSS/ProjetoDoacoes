@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using CampanhaDoacaoAPI.Data;
 using CampanhaDoacaoAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,7 +36,10 @@ builder.Services.AddAuthentication(options =>
 });
 
 // 3. Adicionando serviços ao container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 builder.Services.AddEndpointsApiExplorer();
 
 // 4. Configurando o Swagger/OpenAPI para aceitar o token JWT

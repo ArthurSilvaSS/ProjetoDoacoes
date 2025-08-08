@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ProjetoDoacao.Models
 {
@@ -30,6 +31,7 @@ namespace ProjetoDoacao.Models
         public User? Criador { get; set; }
 
         // Relação: Uma campanha pode ter várias doações
+        [JsonIgnore]
         public ICollection<Donation> Donations { get; set; } = new List<Donation>();
     }
 }

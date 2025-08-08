@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ProjetoDoacao.Models
 {
@@ -20,6 +21,7 @@ namespace ProjetoDoacao.Models
 
         // Chave estrangeira para a campanha que recebeu a doação
         public int CampanhaId { get; set; }
+        [JsonIgnore]
         public Campaign? Campanha { get; set; }
     }
 }
