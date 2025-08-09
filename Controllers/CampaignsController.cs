@@ -1,10 +1,10 @@
-﻿// Controllers/CampaignsController.cs
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CampanhaDoacaoAPI.Data;
 using System.Security.Claims;
 using ProjetoDoacao.Models;
+using ProjetoDoacao.DTOs;
 
 namespace CampanhaDoacaoAPI.Controllers
 {
@@ -19,14 +19,25 @@ namespace CampanhaDoacaoAPI.Controllers
             _context = context;
         }
 
-        // GET: api/campaigns - Listar todas as campanhas (público)
+        private int UserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Campaign>>> GetCampaigns()
         {
             return await _context.Campaigns.Include(c => c.Criador).ToListAsync();
         }
 
-        // GET: api/campaigns/{id} - Detalhes de uma campanha (público)
+        [HttpGet("my-campaigns")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<Campaign>>> GetMyCampaigns()
+        {
+            var campaigns = await _context.Campaigns
+                                          .Where(c => c.CriadorId == UserId)
+                                          .ToListAsync();
+
+            return Ok(campaigns);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Campaign>> GetCampaign(int id)
         {
@@ -42,24 +53,57 @@ namespace CampanhaDoacaoAPI.Controllers
             return campaign;
         }
 
-        // POST: api/campaigns - Criar uma nova campanha (protegido)
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<Campaign>> PostCampaign(Campaign campaign)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
-            campaign.CriadorId = int.Parse(userId);
-            campaign.ValorArrecadado = 0; // Inicia com zero
+            campaign.CriadorId = UserId;
+            campaign.ValorArrecadado = 0;
 
             _context.Campaigns.Add(campaign);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetCampaign), new { id = campaign.Id }, campaign);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCampaign(int id, [FromBody] CampaignUpdateDto campaignDto)
+        {
+            var campaign = await _context.Campaigns
+                                         .FirstOrDefaultAsync(c => c.Id == id && c.CriadorId == UserId);
+
+            if (campaign == null)
+            {
+                return NotFound("Campanha não encontrada ou você não tem permissão para editá-la.");
+            }
+
+            campaign.Titulo = campaignDto.Titulo;
+            campaign.Descricao = campaignDto.Descricao;
+            campaign.DataFim = campaignDto.DataFim;
+            campaign.MetaArrecadacao = campaignDto.MetaArrecadacao;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteCampaign(int id)
+        {
+            var campaign = await _context.Campaigns
+                                         .FirstOrDefaultAsync(c => c.Id == id && c.CriadorId == UserId);
+
+            if (campaign == null)
+            {
+                return NotFound("Campanha não encontrada ou você não tem permissão para deletá-la.");
+            }
+
+            _context.Campaigns.Remove(campaign);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
