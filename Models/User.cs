@@ -22,6 +22,8 @@ namespace ProjetoDoacao.Models
         [Required]
         public Role Role { get; set; } = Role.Comum;
 
+        public bool IsDeleted { get; set; } = false;
+
         public ICollection<Campaign> Campaigns { get; set; } = new List<Campaign>();
     }
 }

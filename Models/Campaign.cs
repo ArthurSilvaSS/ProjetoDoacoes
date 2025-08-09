@@ -30,6 +30,8 @@ namespace ProjetoDoacao.Models
         public int CriadorId { get; set; }
         public User? Criador { get; set; }
 
+        public bool IsDeleted { get; set; } = false;
+
         // Relação: Uma campanha pode ter várias doações
         [JsonIgnore]
         public ICollection<Donation> Donations { get; set; } = new List<Donation>();

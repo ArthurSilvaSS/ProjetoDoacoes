@@ -44,7 +44,7 @@ namespace CampanhaDoacaoAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email && !u.IsDeleted);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, user.PasswordHash))
             {

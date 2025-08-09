@@ -24,7 +24,10 @@ namespace CampanhaDoacaoAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Campaign>>> GetCampaigns()
         {
-            return await _context.Campaigns.Include(c => c.Criador).ToListAsync();
+            return await _context.Campaigns
+                     .Where(c => !c.IsDeleted)
+                     .Include(c => c.Criador)
+                     .ToListAsync();
         }
 
         [HttpGet("my-campaigns")]
@@ -32,7 +35,7 @@ namespace CampanhaDoacaoAPI.Controllers
         public async Task<ActionResult<IEnumerable<Campaign>>> GetMyCampaigns()
         {
             var campaigns = await _context.Campaigns
-                                          .Where(c => c.CriadorId == UserId)
+                                          .Where(c => !c.IsDeleted)
                                           .ToListAsync();
 
             return Ok(campaigns);
@@ -42,6 +45,7 @@ namespace CampanhaDoacaoAPI.Controllers
         public async Task<ActionResult<Campaign>> GetCampaign(int id)
         {
             var campaign = await _context.Campaigns
+                .Where(c => !c.IsDeleted)
                 .Include(c => c.Donations)
                 .ThenInclude(d => d.Doador)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -100,7 +104,7 @@ namespace CampanhaDoacaoAPI.Controllers
                 return NotFound("Campanha não encontrada ou você não tem permissão para deletá-la.");
             }
 
-            _context.Campaigns.Remove(campaign);
+            campaign.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return NoContent();

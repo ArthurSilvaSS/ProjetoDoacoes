@@ -22,7 +22,7 @@ namespace ProjetoDoacao.Controllers
         [HttpGet("users")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.Where(c => !c.IsDeleted).ToListAsync();
         }
 
         // DELETE: api/admin/users/{id} - Apagar um usuário
@@ -51,7 +51,7 @@ namespace ProjetoDoacao.Controllers
                 return NotFound("Campanha não encontrada.");
             }
 
-            _context.Campaigns.Remove(campaign);
+            campaign.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return Ok(new { Message = "Campanha apagada com sucesso pelo administrador." });
