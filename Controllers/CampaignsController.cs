@@ -57,7 +57,7 @@ namespace CampanhaDoacaoAPI.Controllers
         public async Task<ActionResult<IEnumerable<Campaign>>> GetMyCampaigns()
         {
             var campaigns = await _context.Campaigns
-                                          .Where(c => !c.IsDeleted)
+                                          .Where(c => c.CriadorId == UserId && !c.IsDeleted)
                                           .ToListAsync();
 
             return Ok(campaigns);
