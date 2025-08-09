@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using CampanhaDoacaoAPI.Data;
@@ -60,7 +61,21 @@ builder.Services.AddEndpointsApiExplorer();
 
 // 4. Configurando o Swagger/OpenAPI para aceitar o token JWT
 builder.Services.AddSwaggerGen(c => {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "CampanhaDoacaoAPI", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo {
+        Title = "ProjetoDoacaoAPI",
+        Version = "v1",
+        Description = "API para gestão de campanhas de doação.",
+        Contact = new OpenApiContact
+        {
+            Name = "Arthur Silva dos Santos",
+            Email = "arthur.silva443@gmail.com"
+        }
+    });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 

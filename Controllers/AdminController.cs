@@ -9,6 +9,7 @@ namespace ProjetoDoacao.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
     public class AdminController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -18,15 +19,41 @@ namespace ProjetoDoacao.Controllers
             _context = context;
         }
 
-        // GET: api/admin/users - Listar todos os usuários
+        /// <summary>
+        /// Lista todos os usuários cadastrados no sistema.
+        /// </summary>
+        /// <remarks>
+        /// Acesso restrito a administradores. Retorna todos os usuários, incluindo os desativados.
+        /// </remarks>
+        /// <returns>Uma lista de todos os usuários.</returns>
+        /// <response code="200">Retorna a lista de usuários.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        /// <response code="403">Se o usuário autenticado não for um administrador.</response>
         [HttpGet("users")]
+        [ProducesResponseType(typeof(IEnumerable<User>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return await _context.Users.Where(c => !c.IsDeleted).ToListAsync();
         }
 
-        // DELETE: api/admin/users/{id} - Apagar um usuário
+        /// <summary>
+        /// Desativa (soft delete) um usuário específico pelo ID.
+        /// </summary>
+        /// <remarks>
+        /// Acesso restrito a administradores. Esta ação também desativa em cascata todas as campanhas do usuário.
+        /// </remarks>
+        /// <param name="id">O ID do usuário a ser desativado.</param>
+        /// <response code="204">Usuário desativado com sucesso.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        /// <response code="403">Se o usuário autenticado não for um administrador.</response>
+        /// <response code="404">Se o usuário com o ID especificado não for encontrado.</response>
         [HttpDelete("users/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -41,8 +68,20 @@ namespace ProjetoDoacao.Controllers
             return NoContent();
         }
 
-        // DELETE: api/admin/campaigns/{id} - Apagar qualquer campanha
+        /// <summary>
+        /// Desativa (soft delete) qualquer campanha pelo ID.
+        /// </summary>
+        /// <remarks>Acesso restrito a administradores.</remarks>
+        /// <param name="id">O ID da campanha a ser desativada.</param>
+        /// <response code="204">Campanha desativada com sucesso.</response>
+        /// <response code="401">Não autenticado.</response>
+        /// <response code="403">Não autorizado (não é Admin).</response>
+        /// <response code="404">Se a campanha não for encontrada.</response>
         [HttpDelete("campaigns/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteCampaign(int id)
         {
             var campaign = await _context.Campaigns.FindAsync(id);

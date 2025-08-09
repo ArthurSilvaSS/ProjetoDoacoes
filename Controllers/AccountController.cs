@@ -21,7 +21,20 @@ namespace ProjetoDoacao.Controllers
 
         private int UserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+        /// <summary>
+        /// Altera a senha do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Requer a senha atual para confirmação da alteração.
+        /// </remarks>
+        /// <param name="dto">Objeto contendo a senha atual e a nova senha.</param>
+        /// <response code="200">Senha alterada com sucesso.</response>
+        /// <response code="400">Se a senha atual estiver incorreta.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
         [HttpPost("change-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
             var user = await _context.Users.FindAsync(UserId);
@@ -41,7 +54,20 @@ namespace ProjetoDoacao.Controllers
             return Ok(new { Message = "Senha alterada com sucesso." });
         }
 
+        /// <summary>
+        /// Atualiza o email do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Requer a senha atual para confirmação da alteração.
+        /// </remarks>
+        /// <param name="dto">Objeto contendo o novo email e a senha atual.</param>
+        /// <response code="200">Perfil atualizado com sucesso.</response>
+        /// <response code="400">Se a senha atual estiver incorreta ou o novo email já estiver em uso.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
         [HttpPut("update-profile")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
             var user = await _context.Users.FindAsync(UserId);
@@ -66,7 +92,20 @@ namespace ProjetoDoacao.Controllers
             return Ok(new { Message = "Perfil atualizado com sucesso." });
         }
 
+        /// <summary>
+        /// Desativa (soft delete) a conta do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Ação crítica que requer a senha do usuário para confirmação. Desativa o usuário e todas as suas campanhas associadas.
+        /// </remarks>
+        /// <param name="dto">Objeto contendo a senha para confirmação.</param>
+        /// <response code="200">Conta desativada com sucesso.</response>
+        /// <response code="400">Se a senha de confirmação estiver incorreta.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
         [HttpPost("delete-account")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == UserId && !u.IsDeleted);
