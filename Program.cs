@@ -9,6 +9,22 @@ using Microsoft.OpenApi.Models; // Para o Swagger
 
 var builder = WebApplication.CreateBuilder(args);
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:3000", // React
+                                             "http://localhost:4200", // Angular
+                                             "http://localhost:5173", // Vite (React, Vue)
+                                             "http://localhost:8080") // Vue
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+                      });
+});
+
 // 1. Configurando o DbContext com MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -87,6 +103,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();
