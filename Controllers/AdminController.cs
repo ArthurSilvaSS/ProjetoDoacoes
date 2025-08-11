@@ -35,7 +35,7 @@ namespace ProjetoDoacao.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.Where(c => !c.IsDeleted).ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         /// <summary>
@@ -61,8 +61,16 @@ namespace ProjetoDoacao.Controllers
             {
                 return NotFound("Usuário não encontrado.");
             }
+            user.IsDeleted = true;
+            var userCampaigns = await _context.Campaigns
+                                      .Where(c => c.CriadorId == user.Id && !c.IsDeleted)
+                                      .ToListAsync();
 
-            _context.Users.Remove(user);
+            foreach (var campaign in userCampaigns)
+            {
+                campaign.IsDeleted = true;
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -94,6 +102,17 @@ namespace ProjetoDoacao.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { Message = "Campanha apagada com sucesso pelo administrador." });
+        }
+
+        /// <summary>
+        /// (Admin) Lista TODAS as campanhas do sistema.
+        /// </summary>
+        /// <remarks>Acesso restrito a administradores. Retorna todas as campanhas, incluindo as inativas.</remarks>
+        [HttpGet("campaigns")]
+        [ProducesResponseType(typeof(IEnumerable<Campaign>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<Campaign>>> GetAllCampaigns()
+        {
+            return await _context.Campaigns.Include(c => c.Criador).ToListAsync();
         }
     }
 }
