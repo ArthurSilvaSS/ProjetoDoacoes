@@ -59,7 +59,8 @@ namespace ProjetoDoacao.Controllers
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
-                return NotFound("Usuário não encontrado.");
+                return NotFound("Usuário não encontrado.")
+                    ;
             }
             user.IsDeleted = true;
             var userCampaigns = await _context.Campaigns
