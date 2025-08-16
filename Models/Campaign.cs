@@ -29,8 +29,8 @@ namespace ProjetoDoacao.Models
         // Chave estrangeira para o criador da campanha
         public int CriadorId { get; set; }
         public User? Criador { get; set; }
-
         public bool IsDeleted { get; set; } = false;
+        public string? ImagemUrl { get; set; }
 
         // Relação: Uma campanha pode ter várias doações
         [JsonIgnore]
