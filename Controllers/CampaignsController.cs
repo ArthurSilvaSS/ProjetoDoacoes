@@ -5,6 +5,8 @@ using CampanhaDoacaoAPI.Data;
 using System.Security.Claims;
 using ProjetoDoacao.Models;
 using ProjetoDoacao.DTOs;
+using ProjetoDoacao.Helpers;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CampanhaDoacaoAPI.Controllers
 {
@@ -31,37 +33,53 @@ namespace CampanhaDoacaoAPI.Controllers
         /// <response code="200">Retorna a lista de campanhas.</response>
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Campaign>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Campaign>>> GetCampaigns()
+        [ProducesResponseType(typeof(PagedResult<Campaign>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<Campaign>>> GetCampaigns([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
         {
-            return await _context.Campaigns
-                     .Where(c => !c.IsDeleted)
-                     .Include(c => c.Criador)
-                     .ToListAsync();
+            var query = _context.Campaigns
+                                .Where(c => !c.IsDeleted)
+                                .Include(c => c.Criador)
+                                .OrderByDescending(c => c.DataInicio);
+
+            var totalCount = await query.CountAsync();
+
+            var campaigns = await query
+                                    .Skip((pageNumber - 1) * pageSize)
+                                    .Take(pageSize)
+                                    .ToListAsync();
+
+            var pagedResult = new PagedResult<Campaign>
+            {
+                Items = campaigns,
+                TotalCount = totalCount
+            };
+
+            return Ok(pagedResult);
         }
 
 
-        /// <summary>
-        /// Lista as campanhas criadas pelo usuário autenticado.
-        /// </summary>
-        /// <remarks>
-        /// Requer autenticação. Retorna uma lista de todas as campanhas ativas criadas pelo usuário do token JWT.
-        /// </remarks>
-        /// <returns>Uma lista de campanhas do usuário.</returns>
-        /// <response code="200">Retorna a lista de campanhas do usuário.</response>
-        /// <response code="401">Se o usuário não estiver autenticado.</response>
-        [HttpGet("my-campaigns")]
-        [Authorize]
-        [ProducesResponseType(typeof(IEnumerable<Campaign>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<Campaign>>> GetMyCampaigns()
-        {
-            var campaigns = await _context.Campaigns
-                                          .Where(c => c.CriadorId == UserId && !c.IsDeleted)
-                                          .ToListAsync();
 
-            return Ok(campaigns);
-        }
+            /// <summary>
+            /// Lista as campanhas criadas pelo usuário autenticado.
+            /// </summary>
+            /// <remarks>
+            /// Requer autenticação. Retorna uma lista de todas as campanhas ativas criadas pelo usuário do token JWT.
+            /// </remarks>
+            /// <returns>Uma lista de campanhas do usuário.</returns>
+            /// <response code="200">Retorna a lista de campanhas do usuário.</response>
+            /// <response code="401">Se o usuário não estiver autenticado.</response>
+            [HttpGet("my-campaigns")]
+            [Authorize]
+            [ProducesResponseType(typeof(IEnumerable<Campaign>), StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+            public async Task<ActionResult<IEnumerable<Campaign>>> GetMyCampaigns()
+            {
+                var campaigns = await _context.Campaigns
+                                            .Where(c => c.CriadorId == UserId && !c.IsDeleted)
+                                            .ToListAsync();
+
+                return Ok(campaigns);
+            }
 
         /// <summary>
         /// Busca uma campanha específica pelo seu ID.
