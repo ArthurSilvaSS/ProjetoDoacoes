@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(options =>
 // 3. Adicionando serviços ao container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddEndpointsApiExplorer();
 
